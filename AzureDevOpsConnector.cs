@@ -14,19 +14,17 @@ namespace AzureDevOpsConnector
     {
         [FunctionName("AzureDevOpsConnector")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Admin, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            string id = req.Query["name"];
-
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             dynamic data = JsonConvert.DeserializeObject(requestBody);
-            id = id ?? data?.id;
+            var commentText = data?.detailedMessage["text"].ToString();
 
-            return id != null
-                ? (ActionResult)new OkObjectResult($"Hello, {id}")
+            return commentText != null
+                ? (ActionResult)new OkObjectResult($"Hello, {commentText}")
                 : new BadRequestObjectResult("Please pass a name on the query string or in the request body");
         }               
     }

@@ -22,27 +22,35 @@ namespace AzureDevOpsConnector
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
+            var azureDevOpsToken = Environment.GetEnvironmentVariable("AzureDevOpsToken");
+            var azureDevopToken = Environment.GetEnvironmentVariable("AzureDevOpsUser");
+            var azureDevopsUri = Environment.GetEnvironmentVariable("AzureDevOpsUri");
+            
+            return PostComment(azureDevOpsToken, azureDevopsUri);
+
+        }
+
+        private static IActionResult PostComment(string azureDevOpsToken, string azureDevopsUri)
+        {
             try
             {
-                var azureDevOpsToken = Environment.GetEnvironmentVariable("AzureDevOpsToken");
-                var azureDevopToken = Environment.GetEnvironmentVariable("AzureDevOpsUser");
-                var azureDevopsUri = Environment.GetEnvironmentVariable("AzureDevOpsUri");
+
 
                 using (HttpClient client = new HttpClient())
                 {
                     client.DefaultRequestHeaders.Accept.Add(
                         new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                    
-                    
+
+
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
                         Convert.ToBase64String(
                             System.Text.ASCIIEncoding.ASCII.GetBytes(
                                 string.Format("{0}:{1}", "TestApiToken", azureDevOpsToken))));
 
                     var json = JsonConvert.SerializeObject(new { text = "testApi1" });
-                    
+
                     var response = client.PostAsync(
-                                azureDevopsUri,new StringContent(json, Encoding.UTF8, "application/json"));
+                                azureDevopsUri, new StringContent(json, Encoding.UTF8, "application/json"));
 
                     if (response.Result.IsSuccessStatusCode)
                         return (ActionResult)new OkObjectResult("Deu Bom");
@@ -53,9 +61,8 @@ namespace AzureDevOpsConnector
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                 return (ActionResult)new OkObjectResult("Deu ruim");
+                return (ActionResult)new OkObjectResult("Deu ruim");
             }
-
         }
     }
 }
